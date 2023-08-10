@@ -1,0 +1,45 @@
+RESOURCE_GROUP="album-containerapps"
+LOCATION="canadacentral"
+ENVIRONMENT="env-album-containerapps"
+API_NAME="album-api"
+FRONTEND_NAME="album-ui"
+GITHUB_USERNAME="celiberato"
+ACR_NAME=acrname2023
+
+git clone https://github.com/celiberato/containerapps-albumapi-csharp-EXECUTANDO.git code-to-cloud
+
+cd code-to-cloud/src
+
+az group create \
+  --name "album-containerapps" \
+  --location "canadacentral"
+
+
+az acr create \
+  --resource-group album-containerapps \
+  --name acrname2023 \
+  --sku Basic \
+  --admin-enabled true
+
+
+az acr build --registry acrname2023 --image album-api .
+
+
+az containerapp env create \
+  --name env-album-containerapps \
+  --resource-group album-containerapps \
+  --location canadacentral		
+
+
+az containerapp create \
+  --name album-api \
+  --resource-group album-containerapps \
+  --environment env-album-containerapps \
+  --image acrname2023.azurecr.io/album-api \
+  --target-port 3500 \
+  --ingress 'external' \
+  --registry-server acrname2023.azurecr.io \
+  --query properties.configuration.ingress.fqdn	
+
+
+https://album-api.nicewave-46b1e286.canadacentral.azurecontainerapps.io/albums
